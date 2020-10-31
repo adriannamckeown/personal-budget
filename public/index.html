@@ -107,7 +107,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.min.js" integrity="sha512-quHCp3WbBNkwLfYUMd+KwBAgpVukJu5MncuQaWXgCrfgcxCJAq/fo+oqrRKOj+UKEmyMCG3tb8RB63W+EmrOBg==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" integrity="sha512-s+xg36jbIujB2S2VKfpGmlC3T5V2TF3lY48DX7u2r9XzGzgPsa6wTpOQA7J9iffvdeBN0q9tKzRxVxw1JviZPg==" crossorigin="anonymous"></script>
     <script src="https://d3js.org/d3.v3.min.js"></script>
-
+     
     <script>
         var svg = d3.select("body")
             .append("svg")
@@ -144,26 +144,20 @@
 
         var budget_labels = [];
         var budget_values = [];
+        var budget_colors = [];
         var myBudget_dict = {};
         
         var dataSource = {
             datasets: [
                 {
                 data: [],
-                backgroundColor: [
-                   '#fffb87',
-                   '#ffa1e1',
-                   '#a3fff7',
-                   '#ffc66b',
-                   '#be9eff',
-                   '#aafaa0',
-                   '#ff4d4d',
-                ]
+                backgroundColor: []
               }
             ],
             labels: []
         };
 
+        
         function createChart() {
             var ctx = document.getElementById("myChart").getContext("2d");
             var myChart = new Chart(ctx, {
@@ -172,20 +166,23 @@
             });
         }
 
-
         function main() {
-            axios.get('/budget').then(function(res){
-                for (var i = 0; i < res.data.myBudget.length; i++){
-                    budget_values.push(res.data.myBudget[i].budget);
-                    budget_labels.push(res.data.myBudget[i].title);
-                    myBudget_dict[String(res.data.myBudget[i].title)] = res.data.myBudget[i].budget;
-                    dataSource.datasets[0].data.push(res.data.myBudget[i].budget);
-                    dataSource.labels.push(res.data.myBudget[i].title);
-                }
+            axios.get('http://localhost:3000/budget')
+                .then((res) => {
+                    for (var i = 0; i <= res.data.length; i++){
+                        budget_values.push(res.data[i].budget);
+                        budget_labels.push(res.data[i].title);
+                        budget_colors.push(res.data[i].color);
+                        myBudget_dict[String(res.data[i].title)] = res.data[i].budget;
+                        dataSource.datasets[0].data.push(res.data[i].budget);
+                        dataSource.labels.push(res.data[i].title);
+                        dataSource.datasets[0].backgroundColor[i].push(res.data[i].color);
+                    }
+
                 createChart();
                 var color = d3.scale.ordinal()
                     .domain(budget_labels)
-                    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+                    .range(budget_colors);
 
                 function randomData (){
                     var labels = color.domain();
